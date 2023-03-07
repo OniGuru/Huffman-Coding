@@ -146,7 +146,7 @@ void buildHuffman(const std::string& text)
     std::cout << decodedStr << std::endl;
 
     // Finding compression ratio
-    int org = 8*text.length();
+    int org = static_cast<int>(8*text.length());
     int conv = ceil(res.length()/8);
     double compressionRatio = (double)conv/org;
     std::cout << "String is compressed to " << compressionRatio * 100 << "% of the total size." << std::endl;
