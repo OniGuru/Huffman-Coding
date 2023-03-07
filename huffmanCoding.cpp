@@ -1,151 +1,164 @@
-#include<iostream>
-#include<string>
-#include<queue>
-#include<unordered_map>
-#include<cmath>
-using namespace std;
+#include <iostream>
+#include <string>
+#include <queue>
+#include <unordered_map>
+#include <cmath>
 
-///Node class for making a tree
-class Node{
-    public:
+
+/////////////////////// Tree -> node //////////////////////
+class Node
+{
+public:
     char c;
     int freq;
     Node *left, *right;
 };
 
-///Function to make a new tree node
-Node* getNode(char c, int freq, Node* left, Node* right){
+
+/////////////////// func for tree node ///////////////////
+Node* getNode(char c, int freq, Node* left, Node* right)
+{
     Node* t = new Node();
     t->c = c;
     t->freq = freq;
     t->left = left;
     t->right = right;
+
     return t;
 }
 
-///Comparison object so as to order the heap
-class comp{
-    public:
-    bool operator()(Node* left, Node* right){
-        ///Highest priority or top most item in pq must have highest freq
+
+///////// cmp object as to the order -> the heap /////////
+class cmp
+{
+public:
+    bool operator()(Node* left, Node* right)
+    {
+        // return through priority top most items first
         return left->freq > right->freq;
     }
 };
 
-///Traverse huffman and store strings in the map for huffman codes
-void encode(Node* root, string str, unordered_map<char,string> &huffmanCode){
-    ///If root is NULL nothing can be done!
+
+///////////////// Huffman code to store /////////////////
+void encode(Node* root, const std::string& str, std::unordered_map<char, std::string> &huffmanCode)
+{
+    // valid check
     if(!root)
         return;
 
-    ///Found a leaf
+    // if found
     if(!root->left && !root->right)
+    {
         huffmanCode[root->c] = str;
+        return; // ret to stop stack overflow
+    }
 
     encode(root->left, str+"0", huffmanCode);
     encode(root->right, str+"1", huffmanCode);
 }
 
-///Traverse huffman and decode the string given
-string decode(Node* root, string s){
-	string ans = "";
-	Node* temp = root;
-	for (int i=0;i<s.size();i++){
-		if (s[i] == '0')
+
+/////////// Huffman -> decode the strings ///////////
+std::string decode(Node* root, const std::string& s)
+{
+    std::string ans;
+    Node* temp = root;
+    for (char i : s)
+    {
+        if (i == '0')
+        {
             temp = temp->left;
-		else
+        }else
+        {
             temp = temp->right;
-
-		// reached leaf node
-		if (!temp->left && !temp->right){
-			ans += temp->c;
-			temp = root;
-		}
-
-	}
-
-	return ans+'\0';
+        }
+        if(!temp->left && !temp->right)
+        {
+            ans += temp->c;
+            temp = root;
+        }
+    }
+    return ans+'\n';
 }
 
-///Building huffman and finally, decoding it!
-void buildHuffman(string text){
 
-    ///Counts and stores frequency of every occuring character
-    unordered_map<char, int> freq;
+//////////// Use Huffman -> decode //////////////
+void buildHuffman(const std::string& text)
+{
+    // Counts then stores freq in char
+    std::unordered_map<char, int> freq;
 
-    for(auto c:text){
-        ///Updating frequency
+    for(auto c:text)
+    {
         freq[c]++;
     }
 
-    ///Creating priority queue for storing leaves of the huffman tree
-    priority_queue<Node*, vector<Node*>, comp> tree;
+    // Create priority_queue for store leaves of tree
+    std::priority_queue<Node*, std::vector<Node*>, cmp> tree;
 
-    ///Creating leaf node of each character stored in the map and insert in root;
-    cout<<"\nFrequency of each character in input string:\n";
-    for(auto p: freq){
-        cout<<p.first<<" : "<<p.second<<endl;
-        tree.push(getNode(p.first, p.second, NULL, NULL));
+    // Creating leaf node of each char in map -> root
+    std::cout << "\nFrequency of each char in input string:\n";
+    for(auto p : freq)
+    {
+        std::cout << p.first << " : " << p.second << std::endl;
+        tree.push(getNode(p.first, p.second, nullptr, nullptr));
     }
 
-    ///Creating tree
-    while(tree.size()!=1){
-        ///Remove two nodes with highest priority ie lowest frequency from tree
+    // Create tree
+    while(tree.size() != 1)
+    {
         Node* left = tree.top(); tree.pop();
         Node* right = tree.top(); tree.pop();
 
-        ///Create new node with these two as its children and push a new node with freq = sum of both children
+        // New node with left and right freq = sum of left && right
         int sum = left->freq + right->freq;
         tree.push(getNode(NULL, sum, left, right));
     }
 
-    ///Root stores pointer to root of huffman tree
+    // Str ptr of root -> tree
     Node* root = tree.top();
 
-    ///CREATED!
-
-    ///Traverse the whole huffman tree and store huffman codes in map
-    unordered_map<char, string> huffmanCode;
+    // Huffman tree -> str huffman -> in huffmanCode
+    std::unordered_map<char, std::string> huffmanCode;
     encode(root, "", huffmanCode);
 
-    cout<<"\nHUFFMAN CODES ARE:\n"<<endl;
+    std::cout << "\nHUFFMAN CODES ARE:\n" << std::endl;
 
-    ///Printing codes for each character
-    for(auto p: huffmanCode)
-        cout<<p.first<<" : "<<p.second<<endl;
+    // Print code for each char
+    for(const auto& p : huffmanCode)
+    {
+        std::cout<< p.first << " : " << p.second << std::endl;
+    }
+    std::cout << "\nOriginal string was: \n" << text << std::endl;
 
-    cout<<endl;
-
-    cout<<"\nOriginal string was: \n"<<text<<endl;
-    cout<<endl;
-
-    ///Appending code
-    string res = "";
-    for(char c:text)
+    // Appending code
+    std::string res;
+    for(char c : text)
+    {
         res += huffmanCode[c];
+    }
+    std::cout << "\nEncoded string was: \n" << res <<std::endl;
 
-    ///Printing huffman coded string for the given text;
-    cout<<"\nEncoded string is: \n"<<res<<endl;
+    // Huffman -> decode
+    std::cout << "\nDecoded string is : \n";
+    std::string decodedStr = decode(root, res);
+    std::cout << decodedStr << std::endl;
 
-    ///Traversing the huffman tree again so as to decode the string res
-    cout<<"\nDecoded string is: \n";
-    string decodedStr = decode(root, res);
-    cout<<decodedStr<<endl;
-    cout<<endl<<endl;
-
-    ///Finding compression ratio
+    // Finding compression ratio
     int org = 8*text.length();
     int conv = ceil(res.length()/8);
-    double compressionRate = (double)conv/org;
-    cout<<"String is compressed to "<<compressionRate*100<<"% of the total size."<<endl;
+    double compressionRatio = (double)conv/org;
+    std::cout << "String is compressed to " << compressionRatio * 100 << "% of the total size." << std::endl;
 
 }
 
-///Huffman coding begins
-int main()
-{
-    string str;
-    getline(cin, str);
+
+
+
+int main() {
+    std::string str;
+    std::getline(std::cin, str);
 
     buildHuffman(str);
 
